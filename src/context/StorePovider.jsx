@@ -1,18 +1,25 @@
-import React, { useReducer } from 'react'
-import storeReducer from './storeReducer'
-import storeContext from './storeContext'
-import decode_token from '../utils/index'
+import { useReducer } from "react";
+import { decode_token } from "../utils";
+import storeContext from "./storeContext";
+import storeReducer from "./storeReducer";
 
-const StorePovider = ({ children }) => {
+const StoreProvider = ({ children }) => {
+  const token = localStorage.getItem("newsToken") || "";
+  const userInfo = decode_token(token);
 
-    const [store, dispatch] = useReducer(storeReducer, {
-        userInfo: decode_token(localStorage.getItem('newsToken')),
-        token: localStorage.getItem('newsToken') || ""
-    })
+  const initialState = {
+    userInfo,
+    token,
+    categories: [],
+  };
 
-    return <storeContext.Provider value={{ store, dispatch }}>
-        {children}
+  const [store, dispatch] = useReducer(storeReducer, initialState);
+
+  return (
+    <storeContext.Provider value={{ store, dispatch }}>
+      {children}
     </storeContext.Provider>
-}
+  );
+};
 
-export default StorePovider
+export default StoreProvider;

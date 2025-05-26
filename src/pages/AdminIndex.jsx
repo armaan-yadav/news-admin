@@ -1,15 +1,13 @@
 import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { base_url } from "../../config/config";
-import storeContext from "../../context/storeContext";
-import { MdHail } from "react-icons/md";
+import { base_url } from "../config/config";
+import storeContext from "../context/storeContext";
 
 const AdminIndex = () => {
-  const { store } = useContext(storeContext);
   const [news, setNews] = useState([]);
-
+  const { store } = useContext(storeContext);
   const fetchNews = async () => {
     try {
       const data = await axios.get(`${base_url}/api/news`, {
@@ -20,13 +18,15 @@ const AdminIndex = () => {
       console.log(error);
     }
   };
+
   useEffect(() => {
     fetchNews();
   }, []);
 
   return (
     <div className="mt-2">
-      <div className="grid grid-cols-5 gap-x-4">
+      {/* // todo fixme */}
+      {/* <div className="grid grid-cols-5 gap-x-4">
         <div className="w-full p-8 flex justify-center flex-col rounded-md items-center gap-y-2 bg-white text-slate-700">
           <span className="text-xl font-bold">50</span>
           <span className="text-md">Total News</span>
@@ -47,7 +47,7 @@ const AdminIndex = () => {
           <span className="text-xl font-bold">50</span>
           <span className="text-md">Writers</span>
         </div>
-      </div>
+      </div> */}
       <div className="bg-white p-4 mt-5">
         <div className="flex justify-between items-center pb-4">
           <h2>Recent News</h2>
@@ -69,7 +69,7 @@ const AdminIndex = () => {
             <tbody>
               {news.map((news, i) => (
                 <tr key={i} className="bg-white border-b">
-                  <td className="px-6 py-4">{i+1}</td>
+                  <td className="px-6 py-4">{i + 1}</td>
                   <td className="px-6 py-4">{news.title}</td>
                   <td className="px-6 py-4">
                     <img
@@ -104,8 +104,3 @@ const AdminIndex = () => {
 };
 
 export default AdminIndex;
-
-
-
-
-

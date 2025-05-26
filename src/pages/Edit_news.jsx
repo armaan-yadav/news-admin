@@ -1,26 +1,26 @@
-import axios from "axios";
-import JoditEditor from "jodit-react";
-import { useContext, useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { MdCloudUpload } from "react-icons/md";
-import { Link } from "react-router-dom";
+import JoditEditor from "jodit-react";
+import Gallery from "../components/Gallery";
 import { base_url } from "../../config/config";
+import axios from "axios";
 import storeContext from "../../context/storeContext";
-import Galler from "../components/Galler";
+import toast from "react-hot-toast";
 
+const Edit_news = () => {
+  const { news_id } = useParams();
 
-const AddNews = () => {
   const { store } = useContext(storeContext);
-
   const [show, setShow] = useState(false);
   const editor = useRef(null);
 
+  const [old_image, set_old_image] = useState("");
   const [title, setTitle] = useState("");
-  const [subTitle, setSubTitle] = useState("");
   const [image, setImage] = useState("");
   const [img, setImg] = useState("");
   const [description, setDescription] = useState("");
-  const [value, setValue] = useState("");
+
   const imageHandle = (e) => {
     const { files } = e.target;
 
@@ -35,17 +35,21 @@ const AddNews = () => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("subTitle", subTitle);
     formData.append("description", description);
-    formData.append("image", image);
+    formData.append("new_image", image);
+    formData.append("old_image", old_image);
 
     try {
       setLoader(true);
-      const { data } = await axios.post(`${base_url}/api/news/add`, formData, {
-        headers: {
-          Authorization: `Bearer ${store.token}`,
-        },
-      });
+      const { data } = await axios.put(
+        `${base_url}/api/news/update/${news_id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${store.token}`,
+          },
+        }
+      );
       setLoader(false);
       console.log(data);
       toast.success(data.message);
@@ -105,6 +109,26 @@ const AddNews = () => {
     }
   };
 
+  const get_news = async () => {
+    try {
+      const { data } = await axios.get(`${base_url}/api/news/${news_id}`, {
+        headers: {
+          Authorization: `Bearer ${store.token}`,
+        },
+      });
+      setTitle(data?.news?.title);
+      setDescription(data?.news?.description);
+      setImg(data?.news?.image);
+      set_old_image(data?.news?.image);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    get_news();
+  }, [news_id]);
+
   return (
     <div className="bg-white rounded-md">
       <div className="flex justify-between p-4">
@@ -137,24 +161,6 @@ const AddNews = () => {
               id="title"
             />
           </div>
-          <div className="flex flex-col gap-y-2 mb-6">
-            <label
-              className="text-md font-medium text-gray-600"
-              htmlFor="subTitle"
-            >
-              SubTitle
-            </label>
-            <input
-              required
-              value={subTitle}
-              onChange={(e) => setSubTitle(e.target.value)}
-              type="subTitle"
-              placeholder="subTitle"
-              name="subTitle"
-              className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
-              id="subTitle"
-            />
-          </div>
           <div className="mb-6">
             <div>
               <label
@@ -173,7 +179,6 @@ const AddNews = () => {
                 )}
               </label>
               <input
-                required
                 onChange={imageHandle}
                 className="hidden"
                 type="file"
@@ -196,50 +201,6 @@ const AddNews = () => {
                 value={description}
                 tabIndex={1}
                 onBlur={(value) => setDescription(value)}
-                config={{
-                  readonly: false,
-                  height: 400,
-                  uploader: {
-                    insertImageAsBase64URI: true, // ✅ Inserts as base64. Set false if uploading to server
-                    // If you want to upload to server:
-                    // url: "https://your-api.com/upload",
-                    // format: "json",
-                    // method: "POST",
-                    // headers: { Authorization: "Bearer <token>" },
-                  },
-                  buttons: [
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "ul",
-                    "ol",
-                    "outdent",
-                    "indent",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "image",
-                    "file",
-                    "video",
-                    "table",
-                    "link",
-                    "align",
-                    "undo",
-                    "redo",
-                    "hr",
-                    "eraser",
-                    "copyformat",
-                    "source",
-                  ],
-                  image: {
-                    editSrc: true,
-                    preview: true,
-                    resize: true,
-                    width: "300px",
-                    height: "auto",
-                  },
-                }}
                 onChange={() => {}}
               />
             </div>
@@ -251,7 +212,7 @@ const AddNews = () => {
               className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
             >
               {" "}
-              {loader ? "loading..." : "Add News"}
+              {loader ? "loading..." : "Update News"}
             </button>
           </div>
         </form>
@@ -263,9 +224,9 @@ const AddNews = () => {
         id="images"
         className="hidden"
       />
-      {show && <Galler setShow={setShow} images={images} />}
+      {show && <Gallery setShow={setShow} images={images} />}
     </div>
   );
 };
 
-export default AddNews;
+export default Edit_news;

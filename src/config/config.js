@@ -1,13 +1,2 @@
-const production = "production";
-const development = "development";
+export const base_url = import.meta.env.VITE_API_URL;
 
-const mode = development;
-let base_url = "http://localhost:5000";
-
-if (mode === production) {
-  base_url = "";
-} else {
-  base_url = "http://localhost:5000";
-}
-
-export { base_url };

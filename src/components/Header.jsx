@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
-import profile from '../../assets/profile.png'
-import storeContext from '../../context/storeContext'
+import profile from '../assets/profile.png'
+import storeContext from '../context/storeContext'
 
 const Header = () => {
   const {store} = useContext(storeContext)

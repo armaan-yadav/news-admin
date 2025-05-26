@@ -1,17 +1,33 @@
-import decode_token from '../utils/index'
+import { decode_token } from "../utils/index";
 
 const storeReducer = (state, action) => {
-    const { type, payload } = action
+  const { type, payload } = action;
 
-    if (type === 'login_success') {
-        state.token = payload.token
-        state.userInfo = decode_token(payload.token)
-    }
-    if (type === 'logout') {
-        state.token = ''
-        state.userInfo = ''
-    }
-    return state
-}
+  switch (type) {
+    case "login_success":
+      return {
+        ...state,
+        token: payload.token,
+        userInfo: decode_token(payload.token),
+      };
 
-export default storeReducer
+    case "logout":
+      return {
+        ...state,
+        token: "",
+        userInfo: "",
+        categories: [],
+      };
+
+    case "set_categories":
+      return {
+        ...state,
+        categories: payload,
+      };
+
+    default:
+      return state;
+  }
+};
+
+export default storeReducer;

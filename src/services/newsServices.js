@@ -7,10 +7,8 @@ class NewsServices {
   getAllNews = async () => {};
 
   getAllCategoriesWithName = async () => {
-    console.log("called");
     try {
       const { data } = await axios.get(`${base_url}/api/category/all-name`);
-      console.log(data.categories);
       return data.categories;
     } catch (error) {
       console.log(error);
@@ -22,6 +20,22 @@ class NewsServices {
       return data.categories;
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  deleteNews = async (news_id, token) => {
+    console.log(token);
+    try {
+      const { data } = await axios.delete(
+        `${base_url}/api/news/delete/${news_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   };
 }

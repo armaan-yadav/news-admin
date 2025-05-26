@@ -1,21 +1,18 @@
+import Editor from "@/components/Editor";
+import imageServices from "@/services/imageServices";
 import axios from "axios";
-import JoditEditor from "jodit-react";
+import { Dropdown } from "primereact/dropdown";
 import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { MdCloudUpload } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { base_url } from "../config/config";
 import storeContext from "../context/storeContext";
-import Gallery from "../components/Gallery";
 import newsServices from "../services/newsServices";
-import { Dropdown } from "primereact/dropdown";
 
 const AddNews = () => {
   const { store } = useContext(storeContext);
-
-  const [show, setShow] = useState(false);
   const editor = useRef(null);
-
   const [title, setTitle] = useState("i am title");
   const [subTitle, setSubTitle] = useState("i am sbtitle");
   const [image, setImage] = useState("");
@@ -23,6 +20,7 @@ const AddNews = () => {
   const [description, setDescription] = useState("something");
   const [currentCategory, setCurrentCategory] = useState("all");
   const [categories, setCategories] = useState([]);
+  const [loader, setLoader] = useState(false);
 
   const imageHandle = (e) => {
     const { files } = e.target;
@@ -32,19 +30,21 @@ const AddNews = () => {
       setImage(files[0]);
     }
   };
-  const [loader, setLoader] = useState(false);
 
   const uploadNews = async (e) => {
     e.preventDefault();
+    console.log("upload news called");
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("subTitle", subTitle);
     formData.append("description", description);
-    formData.append("image", image);
     formData.append("category", currentCategory);
 
     try {
       setLoader(true);
+      const { url } = await imageServices.uploadImage(image, store.token);
+      formData.append("image", url);
       console.log("Form Data:");
       for (let pair of formData.entries()) {
         console.log(`${pair[0]}:`, pair[1]);
@@ -60,37 +60,6 @@ const AddNews = () => {
     } catch (error) {
       setLoader(false);
       toast.success(error.response.data.message);
-    }
-  };
-  const [images, setImages] = useState([]);
-
-  const [imagesLoader, setImagesLoader] = useState(false);
-
-  const imageHandler = async (e) => {
-    console.log("images);");
-    const files = e.target.files;
-    try {
-      const formData = new FormData();
-
-      setImagesLoader(true);
-
-      const { data } = await axios.post(
-        `${base_url}/api/images/add`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${store.token}`,
-          },
-        }
-      );
-      setImagesLoader(false);
-      console.log(data);
-      setImages([...images, data.images]);
-      toast.success(data.message);
-    } catch (error) {
-      console.log(error);
-      setImagesLoader(false);
-      toast.error(error.response.data.message);
     }
   };
 
@@ -197,14 +166,9 @@ const AddNews = () => {
           <div className="flex flex-col gap-y-2 mb-6">
             <div className="flex justify-start items-center gap-x-2">
               <h2>Description</h2>
-              <div onClick={() => setShow(true)}>
-                <span className="text-2xl cursor-pointer">
-                  <MdCloudUpload />
-                </span>
-              </div>
             </div>
             <div>
-              <JoditEditor
+              {/* <JoditEditor
                 ref={editor}
                 value={description}
                 tabIndex={1}
@@ -213,38 +177,111 @@ const AddNews = () => {
                   readonly: false,
                   height: 400,
                   uploader: {
-                    insertImageAsBase64URI: true, // ✅ Inserts as base64. Set false if uploading to server
-                    // If you want to upload to server:
-                    // url: "https://your-api.com/upload",
-                    // format: "json",
-                    // method: "POST",
-                    // headers: { Authorization: "Bearer <token>" },
+                    insertImageAsBase64URI: false,
+                    url: `${base_url}/api/images/jodit/add`,
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${store.token}`,
+                    },
+                    format: "json",
+                    isSuccess: function (resp) {
+                      console.log("isSuccess response:", resp);
+                      return resp && resp.files && resp.files.length > 0;
+                    },
+                    getMessage: function (resp) {
+                      return resp.msg || resp.message || "Upload completed";
+                    },
+                    process: function (resp) {
+                      console.log("Process response:", resp);
+
+                      // Transform your server response {files: ["url"]}
+                      // into the format JoditEditor expects
+                      return {
+                        files: resp.files || [],
+                        path: "", // Base path if needed
+                        baseurl: "", // Base URL if your images need a prefix
+                        error: resp.error || null,
+                        msg: resp.msg || resp.message || "",
+                      };
+                    },
+                    defaultHandlerSuccess: function (data, resp) {
+                      console.log(
+                        "defaultHandlerSuccess called with:",
+                        data,
+                        resp
+                      );
+
+                      var i,
+                        field = "files";
+                      if (data[field] && data[field].length) {
+                        for (i = 0; i < data[field].length; i += 1) {
+                          // Insert image - data.baseurl + data.files[i]
+                          // Since your server returns full URLs, baseurl should be empty
+                          const imageUrl =
+                            (data.baseurl || "") + data[field][i];
+                          console.log("Inserting image:", imageUrl);
+                          this.s.insertImage(imageUrl);
+                        }
+                      }
+                    },
+                    error: function (e) {
+                      console.error("Upload error:", e);
+                      // Handle error display if needed
+                    },
                   },
                   buttons: [
+                    "source",
+                    "|",
                     "bold",
                     "italic",
                     "underline",
                     "strikethrough",
+                    "eraser",
+                    "superscript",
+                    "subscript",
+                    "|",
                     "ul",
                     "ol",
-                    "outdent",
                     "indent",
+                    "outdent",
+                    "|",
+                    "left",
+                    "center",
+                    "right",
+                    "justify",
+                    "|",
                     "font",
                     "fontsize",
                     "paragraph",
+                    "classSpan",
+                    "|",
+                    "brush",
+                    "cut",
+                    "copy",
+                    "paste",
+                    "|",
+                    "link",
+                    "unlink",
                     "image",
                     "file",
                     "video",
                     "table",
-                    "link",
-                    "align",
+                    "emoji",
+                    "symbols",
+                    "hr",
+                    "print",
+                    "|",
+                    "fullsize",
+                    "preview",
+                    "find",
+                    "selectall",
+                    "spellcheck",
+                    "copyformat",
+                    "|",
                     "undo",
                     "redo",
-                    "hr",
-                    "eraser",
-                    "copyformat",
-                    "source",
                   ],
+
                   image: {
                     editSrc: true,
                     preview: true,
@@ -254,10 +291,14 @@ const AddNews = () => {
                   },
                 }}
                 onChange={() => {}}
+              /> */}
+              <Editor
+                editor={editor}
+                description={description}
+                setDescription={setDescription}
               />
             </div>
           </div>
-
           {/* SUBMIT BUTTON */}
           <div className="mt-4">
             <button
@@ -270,15 +311,6 @@ const AddNews = () => {
           </div>
         </form>
       </div>
-      <input
-        onChange={imageHandler}
-        type="file"
-        multiple
-        name="images"
-        id="images"
-        className="hidden"
-      />
-      {/* {show && <Gallery setShow={setShow} images={images} />} */}
     </div>
   );
 };

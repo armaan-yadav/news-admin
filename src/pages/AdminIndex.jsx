@@ -26,7 +26,7 @@ const AdminIndex = () => {
   return (
     <div className="mt-2">
       {/* // todo fixme */}
-      {/* <div className="grid grid-cols-5 gap-x-4">
+      <div className="grid grid-cols-5 gap-x-4">
         <div className="w-full p-8 flex justify-center flex-col rounded-md items-center gap-y-2 bg-white text-slate-700">
           <span className="text-xl font-bold">50</span>
           <span className="text-md">Total News</span>
@@ -47,7 +47,7 @@ const AdminIndex = () => {
           <span className="text-xl font-bold">50</span>
           <span className="text-md">Writers</span>
         </div>
-      </div> */}
+      </div>
       <div className="bg-white p-4 mt-5">
         <div className="flex justify-between items-center pb-4">
           <h2>Recent News</h2>

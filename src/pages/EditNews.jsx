@@ -1,25 +1,29 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { MdCloudUpload } from "react-icons/md";
-import JoditEditor from "jodit-react";
-import Gallery from "../components/Gallery";
-import { base_url } from "../../config/config";
+import Editor from "@/components/Editor";
+import imageServices from "@/services/imageServices";
 import axios from "axios";
-import storeContext from "../../context/storeContext";
+import { Dropdown } from "primereact/dropdown";
+import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { MdCloudUpload } from "react-icons/md";
+import { Link, useParams } from "react-router-dom";
+import { base_url } from "../config/config";
+import storeContext from "../context/storeContext";
+import newsServices from "../services/newsServices";
 
-const Edit_news = () => {
+const EditNews = () => {
   const { news_id } = useParams();
-
   const { store } = useContext(storeContext);
-  const [show, setShow] = useState(false);
   const editor = useRef(null);
 
-  const [old_image, set_old_image] = useState("");
   const [title, setTitle] = useState("");
+  const [subTitle, setSubTitle] = useState("");
   const [image, setImage] = useState("");
   const [img, setImg] = useState("");
+  const [old_image, set_old_image] = useState("");
   const [description, setDescription] = useState("");
+  const [currentCategory, setCurrentCategory] = useState("all");
+  const [categories, setCategories] = useState([]);
+  const [loader, setLoader] = useState(false);
 
   const imageHandle = (e) => {
     const { files } = e.target;
@@ -29,18 +33,31 @@ const Edit_news = () => {
       setImage(files[0]);
     }
   };
-  const [loader, setLoader] = useState(false);
 
-  const added = async (e) => {
+  const updateNews = async (e) => {
     e.preventDefault();
+    console.log("update news called");
+
     const formData = new FormData();
     formData.append("title", title);
+    formData.append("subTitle", subTitle);
     formData.append("description", description);
-    formData.append("new_image", image);
-    formData.append("old_image", old_image);
+    formData.append("category", currentCategory);
 
     try {
       setLoader(true);
+
+      if (image) {
+        const { url } = await imageServices.uploadImage(image, store.token);
+        formData.append("image", url);
+      }
+      formData.append("image", old_image);
+
+      console.log("Form Data:");
+      for (let pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
+      }
+
       const { data } = await axios.put(
         `${base_url}/api/news/update/${news_id}`,
         formData,
@@ -55,58 +72,13 @@ const Edit_news = () => {
       toast.success(data.message);
     } catch (error) {
       setLoader(false);
-      toast.success(error.response.data.message);
-    }
-  };
-  const [images, setImages] = useState([]);
-
-  const get_images = async () => {
-    try {
-      const { data } = await axios.get(`${base_url}/api/images`, {
-        headers: {
-          Authorization: `Bearer ${store.token}`,
-        },
-      });
-      console.log(data.images);
-      setImages(data.images);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    get_images();
-  }, []);
-
-  const [imagesLoader, setImagesLoader] = useState(false);
-
-  const imageHandler = async (e) => {
-    const files = e.target.files;
-    try {
-      const formData = new FormData();
-      for (let i = 0; i < files.length; i++) {
-        formData.append("images", files[i]);
-      }
-
-      setImagesLoader(true);
-
-      const { data } = await axios.post(
-        `${base_url}/api/images/add`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${store.token}`,
-          },
-        }
-      );
-      setImagesLoader(false);
-      setImages([...images, data.images]);
-      toast.success(data.message);
-    } catch (error) {
-      console.log(error);
-      setImagesLoader(false);
       toast.error(error.response.data.message);
     }
+  };
+
+  const getCategories = async () => {
+    const res = await newsServices.getAllCategoriesWithName();
+    setCategories(res);
   };
 
   const get_news = async () => {
@@ -116,23 +88,27 @@ const Edit_news = () => {
           Authorization: `Bearer ${store.token}`,
         },
       });
-      setTitle(data?.news?.title);
-      setDescription(data?.news?.description);
-      setImg(data?.news?.image);
-      set_old_image(data?.news?.image);
+      setTitle(data?.news?.title || "");
+      setSubTitle(data?.news?.subTitle || "");
+      setDescription(data?.news?.description || "");
+      setCurrentCategory(data?.news?.category || "all");
+      setImg(data?.news?.image || "");
+      set_old_image(data?.news?.image || "");
     } catch (error) {
       console.log(error);
+      toast.error("Failed to load news data");
     }
   };
 
   useEffect(() => {
+    getCategories();
     get_news();
   }, [news_id]);
 
   return (
     <div className="bg-white rounded-md">
       <div className="flex justify-between p-4">
-        <h2 className="text-xl font-medium">Add News</h2>
+        <h2 className="text-xl font-medium">Edit News</h2>
         <Link
           className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
           to="/dashboard/news"
@@ -142,7 +118,8 @@ const Edit_news = () => {
       </div>
 
       <div className="p-4">
-        <form onSubmit={added}>
+        <form onSubmit={updateNews}>
+          {/* TITLE */}
           <div className="flex flex-col gap-y-2 mb-6">
             <label
               className="text-md font-medium text-gray-600"
@@ -161,6 +138,28 @@ const Edit_news = () => {
               id="title"
             />
           </div>
+
+          {/* SUBTITLE */}
+          <div className="flex flex-col gap-y-2 mb-6">
+            <label
+              className="text-md font-medium text-gray-600"
+              htmlFor="subTitle"
+            >
+              SubTitle
+            </label>
+            <input
+              required
+              value={subTitle}
+              onChange={(e) => setSubTitle(e.target.value)}
+              type="text"
+              placeholder="subTitle"
+              name="subTitle"
+              className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
+              id="subTitle"
+            />
+          </div>
+
+          {/* THUMBNAIL IMAGE */}
           <div className="mb-6">
             <div>
               <label
@@ -179,6 +178,7 @@ const Edit_news = () => {
                 )}
               </label>
               <input
+                name="image"
                 onChange={imageHandle}
                 className="hidden"
                 type="file"
@@ -186,47 +186,47 @@ const Edit_news = () => {
               />
             </div>
           </div>
+
+          {/* CATEGORY */}
+          <div className="mb-6">
+            <Dropdown
+              value={currentCategory}
+              onChange={(e) => setCurrentCategory(e.value)}
+              options={categories}
+              style={{ width: "100%", border: "1px solid #ccc" }}
+              optionLabel="category"
+              placeholder="Select a Category"
+              className="w-full md:w-14rem"
+            />
+          </div>
+
+          {/* DESCRIPTION */}
           <div className="flex flex-col gap-y-2 mb-6">
             <div className="flex justify-start items-center gap-x-2">
               <h2>Description</h2>
-              <div onClick={() => setShow(true)}>
-                <span className="text-2xl cursor-pointer">
-                  <MdCloudUpload />
-                </span>
-              </div>
             </div>
             <div>
-              <JoditEditor
-                ref={editor}
-                value={description}
-                tabIndex={1}
-                onBlur={(value) => setDescription(value)}
-                onChange={() => {}}
+              <Editor
+                editor={editor}
+                description={description}
+                setDescription={setDescription}
               />
             </div>
           </div>
 
+          {/* SUBMIT BUTTON */}
           <div className="mt-4">
             <button
               disabled={loader}
               className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
             >
-              {" "}
               {loader ? "loading..." : "Update News"}
             </button>
           </div>
         </form>
       </div>
-      <input
-        onChange={imageHandler}
-        type="file"
-        multiple
-        id="images"
-        className="hidden"
-      />
-      {show && <Gallery setShow={setShow} images={images} />}
     </div>
   );
 };
 
-export default Edit_news;
+export default EditNews;

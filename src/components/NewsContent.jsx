@@ -1,12 +1,13 @@
-import React, { useContext, useState, useEffect } from "react";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
-import { Link } from "react-router-dom";
-import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import axios from "axios";
+import { convert } from "html-to-text";
+import { useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { FaEdit, FaEye, FaTrash } from "react-icons/fa";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { Link } from "react-router-dom";
 import { base_url } from "../config/config";
 import storeContext from "../context/storeContext";
-import { convert } from "html-to-text";
-import toast from "react-hot-toast";
+import ActionButton from "./ActionButton";
 
 const NewsContent = () => {
   const { store } = useContext(storeContext);
@@ -15,8 +16,11 @@ const NewsContent = () => {
   const [parPage, setParPage] = useState(5);
   const [pages, setPages] = useState(0);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true); // Added loading state
 
   const get_news = async () => {
+    console.log(store.token);
+    setLoading(true); // Set loading to true when starting fetch
     try {
       const { data } = await axios.get(`${base_url}/api/news`, {
         headers: {
@@ -27,6 +31,9 @@ const NewsContent = () => {
       setNews(data.news);
     } catch (error) {
       console.log(error);
+      toast.error("Failed to fetch news");
+    } finally {
+      setLoading(false); // Set loading to false when fetch completes
     }
   };
 
@@ -62,10 +69,12 @@ const NewsContent = () => {
     setPage(1);
     setParPage(5);
   };
+
   const [res, set_res] = useState({
     id: "",
     loader: false,
   });
+
   const update_status = async (status, news_id) => {
     try {
       set_res({
@@ -97,13 +106,61 @@ const NewsContent = () => {
     }
   };
 
+  // Loading component
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="flex flex-col items-center gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <p className="text-gray-600 text-sm">Loading news...</p>
+      </div>
+    </div>
+  );
+
+  // Loading skeleton for table rows
+  const LoadingSkeleton = () => (
+    <tr className="bg-white border-b animate-pulse">
+      <td className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-8"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-24"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="w-10 h-10 bg-gray-200 rounded"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-20"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="h-6 bg-gray-200 rounded w-16"></div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex gap-2">
+          <div className="w-8 h-8 bg-gray-200 rounded"></div>
+          <div className="w-8 h-8 bg-gray-200 rounded"></div>
+          <div className="w-8 h-8 bg-gray-200 rounded"></div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+      </td>
+    </tr>
+  );
+
   return (
     <div>
       <div className="px-4 py-3 flex gap-x-3">
         <select
           onChange={type_filter}
+          disabled={loading} // Disable filters while loading
           name=""
-          className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
+          className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
           id=""
         >
           <option value="">---select type---</option>
@@ -113,11 +170,13 @@ const NewsContent = () => {
         </select>
         <input
           onChange={serach_news}
+          disabled={loading} // Disable search while loading
           type="text"
           placeholder="search news"
-          className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
+          className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
+
       <div className="relative overflow-x-auto p-4">
         <table className="w-full text-sm text-left text-slate-600">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
@@ -130,10 +189,16 @@ const NewsContent = () => {
               <th className="px-7 py-3">Date</th>
               <th className="px-7 py-3">Status</th>
               <th className="px-7 py-3">Active</th>
+              <th className="px-7 py-3">Action</th>
             </tr>
           </thead>
           <tbody>
-            {news.length > 0 &&
+            {loading ? (
+              // Show loading skeleton rows
+              Array.from({ length: parPage }).map((_, i) => (
+                <LoadingSkeleton key={i} />
+              ))
+            ) : news.length > 0 ? (
               news.slice((page - 1) * parPage, page * parPage).map((n, i) => (
                 <tr key={i} className="bg-white border-b">
                   <td className="px-6 py-4">{i + 1}</td>
@@ -158,6 +223,7 @@ const NewsContent = () => {
                             : n.status}
                         </span>
                       )}
+
                       {n.status === "active" && (
                         <span
                           onClick={() => update_status("deactive", n._id)}
@@ -218,11 +284,31 @@ const NewsContent = () => {
                       )}
                     </div>
                   </td>
+                  <td className="flex items-center justify-center h-full px-6 py-4">
+                    <ActionButton newsId={n._id} token={store.token} />
+                  </td>
                 </tr>
-              ))}
+              ))
+            ) : (
+              // Show empty state when no news found
+              <tr>
+                <td
+                  colSpan="9"
+                  className="px-6 py-12 text-center text-gray-500"
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-lg">No news found</p>
+                    <p className="text-sm">
+                      Try adjusting your search or filter criteria
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+
       <div className="flex items-center justify-end px-10 gap-x-3 text-slate-600">
         <div className="flex gap-x-3 justify-center items-center">
           <p className="px-4 py-3 font-semibold text-sm">News par Page</p>
@@ -232,9 +318,10 @@ const NewsContent = () => {
               setParPage(parseInt(e.target.value));
               setPage(1);
             }}
+            disabled={loading}
             name="category"
             id="category"
-            className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
+            className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <option value="5">5</option>
             <option value="10">10</option>
@@ -243,20 +330,26 @@ const NewsContent = () => {
           </select>
         </div>
         <p className="px-6 py-3 font-semibold text-sm">
-          {(page - 1) * parPage + 1}/{news.length} - of {pages}
+          {loading
+            ? "Loading..."
+            : `${(page - 1) * parPage + 1}/${news.length} - of ${pages}`}
         </p>
         <div className="flex items-center gap-x-3">
           <IoIosArrowBack
             onClick={() => {
-              if (page > 1) setPage(page - 1);
+              if (page > 1 && !loading) setPage(page - 1);
             }}
-            className="w-5 h-5 cursor-pointer"
+            className={`w-5 h-5 cursor-pointer ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           />
           <IoIosArrowForward
             onClick={() => {
-              if (page < pages) setPage(page + 1);
+              if (page < pages && !loading) setPage(page + 1);
             }}
-            className="w-5 h-5 cursor-pointer"
+            className={`w-5 h-5 cursor-pointer ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           />
         </div>
       </div>

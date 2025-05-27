@@ -1,24 +1,21 @@
-import React from 'react'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import AppSidebar from "../components/AppSidebar";
+import { Outlet } from "react-router-dom";
 
-import Header from '../components/Header'
-import Sidebar from '../components/Sidebar'
-import { Outlet } from 'react-router-dom'
-
-const MainLayout = () => {
-    return (
-        <div className='min-w-screen min-h-screen bg-slate-100'>
-            <Sidebar />
-            <div className='ml-[250px] w-[calc(100vw-268px)] min-h-[100vh]'>
-                <Header />
-                <div className='p-4'>
-                    <div className='pt-[85px]'>
-                        <Outlet />
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    )
+export default function MainLayout() {
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+        </header>
+        <Outlet />
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
-
-export default MainLayout

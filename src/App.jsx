@@ -4,8 +4,8 @@ import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { lazy, Suspense, useContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import storeContext from "./context/storeContext";
-import 'primeicons/primeicons.css';
-        
+import "primeicons/primeicons.css";
+import TestPage from "./pages/TestPage";
 
 // Lazy imports
 const MainLayout = lazy(() => import("./layout/MainLayout"));
@@ -31,6 +31,7 @@ function App() {
       <PrimeReactProvider>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
+            <Route path="/" element={<TestPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/dashboard" element={<ProtectDashboatd />}>

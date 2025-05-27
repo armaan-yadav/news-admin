@@ -14,7 +14,6 @@ const EditNews = () => {
   const { news_id } = useParams();
   const { store } = useContext(storeContext);
   const editor = useRef(null);
-
   const [title, setTitle] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [image, setImage] = useState("");

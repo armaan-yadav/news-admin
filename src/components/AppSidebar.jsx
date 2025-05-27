@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Grid2x2 } from "lucide-react";
 
 const AppSidebar = ({ ...props }) => {
   const { store, dispatch } = useContext(storeContext);
@@ -89,6 +90,12 @@ const AppSidebar = ({ ...props }) => {
           icon: <ImProfile />,
           isActive: pathname === "/dashboard/profile",
         },
+        {
+          title: "Categories",
+          url: "/dashboard/categories",
+          icon: <Grid2x2 />,
+          isActive: pathname === "/dashboard/news/categories",
+        },
       ],
     },
   ];
@@ -97,13 +104,7 @@ const AppSidebar = ({ ...props }) => {
     <Sidebar {...props}>
       <SidebarHeader>
         <div className="flex justify-center items-center p-4">
-          <Link to="/">
-            <img
-              className="h-[50px]"
-              src="https://res.cloudinary.com/dhdshkjej/image/upload/v1747823327/arwnwptvs6ez6fs5eqbh.jpg"
-              alt="Logo"
-            />
-          </Link>
+          <Link to="/">home</Link>
         </div>
       </SidebarHeader>
 

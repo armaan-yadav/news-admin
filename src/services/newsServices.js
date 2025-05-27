@@ -16,10 +16,43 @@ class NewsServices {
   };
   getAllCategories = async () => {
     try {
-      const { data } = await axios.get(`${base_url}/api/category/all`);
+      const { data } = await axios.get(`${base_url}/api/category/all-stats`);
       return data.categories;
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  addCategory = async (categoryName, token) => {
+    try {
+      const { data } = await axios.post(
+        `${base_url}/api/category/add`,
+        {
+          name: categoryName,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
+  deleteCategory = async (categoryId, token) => {
+    try {
+      const { data } = await axios.delete(
+        `${base_url}/api/category/delete/${categoryId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      return data;
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   };
 

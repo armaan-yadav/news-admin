@@ -67,11 +67,18 @@ const EditNews = () => {
         }
       );
       setLoader(false);
-      console.log(data);
-      toast.success(data.message);
+      toast({
+        title: "Success",
+        description: data.message,
+        variant: "success",
+      });
     } catch (error) {
       setLoader(false);
-      toast.error(error.response.data.message);
+      toast({
+        title: "Error",
+        description: error.response.data.message,
+        variant: "error",
+      });
     }
   };
 

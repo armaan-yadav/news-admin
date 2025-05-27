@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/sidebar";
 import AppSidebar from "../components/AppSidebar";
 import { Outlet } from "react-router-dom";
+import { Toaster } from "sonner";
 
 export default function MainLayout() {
   return (
@@ -15,6 +16,7 @@ export default function MainLayout() {
           <SidebarTrigger className="-ml-1" />
         </header>
         <Outlet />
+        <Toaster />
       </SidebarInset>
     </SidebarProvider>
   );

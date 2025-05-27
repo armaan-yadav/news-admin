@@ -1,7 +1,7 @@
+import { Combobox } from "@/components/Combobox";
 import Editor from "@/components/Editor";
 import imageServices from "@/services/imageServices";
 import axios from "axios";
-import { Dropdown } from "primereact/dropdown";
 import { useContext, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { MdCloudUpload } from "react-icons/md";
@@ -18,7 +18,7 @@ const AddNews = () => {
   const [image, setImage] = useState("");
   const [img, setImg] = useState("");
   const [description, setDescription] = useState("something");
-  const [currentCategory, setCurrentCategory] = useState("all");
+  const [currentCategory, setCurrentCategory] = useState({});
   const [categories, setCategories] = useState([]);
   const [loader, setLoader] = useState(false);
 
@@ -39,7 +39,7 @@ const AddNews = () => {
     formData.append("title", title);
     formData.append("subTitle", subTitle);
     formData.append("description", description);
-    formData.append("category", currentCategory);
+    formData.append("category", currentCategory._id);
 
     try {
       setLoader(true);
@@ -49,6 +49,7 @@ const AddNews = () => {
       for (let pair of formData.entries()) {
         console.log(`${pair[0]}:`, pair[1]);
       }
+      // return;
       const { data } = await axios.post(`${base_url}/api/news/add`, formData, {
         headers: {
           Authorization: `Bearer ${store.token}`,
@@ -65,6 +66,8 @@ const AddNews = () => {
 
   const getCategories = async () => {
     const res = await newsServices.getAllCategoriesWithName();
+    console.log(res);
+    setCurrentCategory(res[0]);
     setCategories(res);
   };
 
@@ -153,145 +156,18 @@ const AddNews = () => {
             </div>
           </div>
           {/* CATEGORY */}
-          <Dropdown
+          <Combobox
             value={currentCategory}
-            onChange={(e) => setCurrentCategory(e.value)}
+            setValue={setCurrentCategory}
             options={categories}
-            style={{ width: "100%", border: "1px solid #ccc" }}
-            optionLabel="category"
-            placeholder="Select a Category"
-            className="w-full md:w-14rem"
+            title="Select Category"
           />
-          {/* DESCIRPTION */}
+          {/* DESCRIPTION */}
           <div className="flex flex-col gap-y-2 mb-6">
             <div className="flex justify-start items-center gap-x-2">
               <h2>Description</h2>
             </div>
             <div>
-              {/* <JoditEditor
-                ref={editor}
-                value={description}
-                tabIndex={1}
-                onBlur={(value) => setDescription(value)}
-                config={{
-                  readonly: false,
-                  height: 400,
-                  uploader: {
-                    insertImageAsBase64URI: false,
-                    url: `${base_url}/api/images/jodit/add`,
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${store.token}`,
-                    },
-                    format: "json",
-                    isSuccess: function (resp) {
-                      console.log("isSuccess response:", resp);
-                      return resp && resp.files && resp.files.length > 0;
-                    },
-                    getMessage: function (resp) {
-                      return resp.msg || resp.message || "Upload completed";
-                    },
-                    process: function (resp) {
-                      console.log("Process response:", resp);
-
-                      // Transform your server response {files: ["url"]}
-                      // into the format JoditEditor expects
-                      return {
-                        files: resp.files || [],
-                        path: "", // Base path if needed
-                        baseurl: "", // Base URL if your images need a prefix
-                        error: resp.error || null,
-                        msg: resp.msg || resp.message || "",
-                      };
-                    },
-                    defaultHandlerSuccess: function (data, resp) {
-                      console.log(
-                        "defaultHandlerSuccess called with:",
-                        data,
-                        resp
-                      );
-
-                      var i,
-                        field = "files";
-                      if (data[field] && data[field].length) {
-                        for (i = 0; i < data[field].length; i += 1) {
-                          // Insert image - data.baseurl + data.files[i]
-                          // Since your server returns full URLs, baseurl should be empty
-                          const imageUrl =
-                            (data.baseurl || "") + data[field][i];
-                          console.log("Inserting image:", imageUrl);
-                          this.s.insertImage(imageUrl);
-                        }
-                      }
-                    },
-                    error: function (e) {
-                      console.error("Upload error:", e);
-                      // Handle error display if needed
-                    },
-                  },
-                  buttons: [
-                    "source",
-                    "|",
-                    "bold",
-                    "italic",
-                    "underline",
-                    "strikethrough",
-                    "eraser",
-                    "superscript",
-                    "subscript",
-                    "|",
-                    "ul",
-                    "ol",
-                    "indent",
-                    "outdent",
-                    "|",
-                    "left",
-                    "center",
-                    "right",
-                    "justify",
-                    "|",
-                    "font",
-                    "fontsize",
-                    "paragraph",
-                    "classSpan",
-                    "|",
-                    "brush",
-                    "cut",
-                    "copy",
-                    "paste",
-                    "|",
-                    "link",
-                    "unlink",
-                    "image",
-                    "file",
-                    "video",
-                    "table",
-                    "emoji",
-                    "symbols",
-                    "hr",
-                    "print",
-                    "|",
-                    "fullsize",
-                    "preview",
-                    "find",
-                    "selectall",
-                    "spellcheck",
-                    "copyformat",
-                    "|",
-                    "undo",
-                    "redo",
-                  ],
-
-                  image: {
-                    editSrc: true,
-                    preview: true,
-                    resize: true,
-                    width: "300px",
-                    height: "auto",
-                  },
-                }}
-                onChange={() => {}}
-              /> */}
               <Editor
                 editor={editor}
                 description={description}

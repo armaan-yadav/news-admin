@@ -6,10 +6,8 @@ const ProtectDashboatd = () => {
   const { store } = useContext(storeContext);
 
   if (store.userInfo) {
-    // console.log("logg");
     return <Outlet />;
   } else {
-    // console.log("not logged in");
     return <Navigate to="/login" />;
   }
 };

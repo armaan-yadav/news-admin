@@ -5,21 +5,22 @@ import { lazy, Suspense, useContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import storeContext from "./context/storeContext";
 import "primeicons/primeicons.css";
-import TestPage from "./pages/TestPage";
+import TestPage from "./pages/TestPage.jsx";
+import CategoriesPage from "./pages/CategoriesPage";
 
 // Lazy imports
 const MainLayout = lazy(() => import("./layout/MainLayout"));
-const AddWriter = lazy(() => import("./pages/AddWriter"));
-const AdminIndex = lazy(() => import("./pages/AdminIndex"));
-const AddNews = lazy(() => import("./pages/AddNews"));
-const EditNews = lazy(() => import("./pages/EditNews"));
-const Login = lazy(() => import("./pages/Login"));
-const News = lazy(() => import("./pages/News"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Signup = lazy(() => import("./pages/Signup"));
-const Unable = lazy(() => import("./pages/Unable"));
-const WriterIndex = lazy(() => import("./pages/WriterIndex"));
-const Writers = lazy(() => import("./pages/Writers"));
+const AddWriter = lazy(() => import("./pages/AddWriterPage"));
+const AdminIndex = lazy(() => import("./pages/AdminIndexPage"));
+const AddNews = lazy(() => import("./pages/AddNewsPage"));
+const EditNews = lazy(() => import("./pages/EditNewsPage"));
+const Login = lazy(() => import("./pages/LoginPage"));
+const News = lazy(() => import("./pages/NewsPage"));
+const Profile = lazy(() => import("./pages/ProfilePage"));
+const Signup = lazy(() => import("./pages/SignupPage"));
+const Unable = lazy(() => import("./pages/UnablePage"));
+const WriterIndex = lazy(() => import("./pages/WriterIndexPage"));
+const Writers = lazy(() => import("./pages/WritersPage"));
 const ProtectDashboatd = lazy(() => import("./middleware/ProtectDashboard"));
 const ProtectRole = lazy(() => import("./middleware/ProtectRole"));
 
@@ -60,6 +61,7 @@ function App() {
                 <Route path="" element={<ProtectRole role="writer" />}>
                   <Route path="writer" element={<WriterIndex />} />
                   <Route path="news/create" element={<AddNews />} />
+                  <Route path="categories" element={<CategoriesPage />} />
                   <Route path="news/edit/:news_id" element={<EditNews />} />
                 </Route>
               </Route>

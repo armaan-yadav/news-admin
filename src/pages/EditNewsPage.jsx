@@ -1,14 +1,14 @@
+import { Combobox } from "@/components/Combobox";
 import Editor from "@/components/Editor";
 import imageServices from "@/services/imageServices";
 import axios from "axios";
-import { Dropdown } from "primereact/dropdown";
 import { useContext, useEffect, useRef, useState } from "react";
-import toast from "react-hot-toast";
 import { MdCloudUpload } from "react-icons/md";
 import { Link, useParams } from "react-router-dom";
 import { base_url } from "../config/config";
 import storeContext from "../context/storeContext";
 import newsServices from "../services/newsServices";
+import { toast } from "sonner";
 
 const EditNews = () => {
   const { news_id } = useParams();
@@ -23,7 +23,7 @@ const EditNews = () => {
   const [currentCategory, setCurrentCategory] = useState("all");
   const [categories, setCategories] = useState([]);
   const [loader, setLoader] = useState(false);
-
+  console.log(currentCategory);
   const imageHandle = (e) => {
     const { files } = e.target;
 
@@ -41,7 +41,7 @@ const EditNews = () => {
     formData.append("title", title);
     formData.append("subTitle", subTitle);
     formData.append("description", description);
-    formData.append("category", currentCategory);
+    formData.append("category", currentCategory._id);
 
     try {
       setLoader(true);
@@ -67,24 +67,17 @@ const EditNews = () => {
         }
       );
       setLoader(false);
-      toast({
-        title: "Success",
-        description: data.message,
-        variant: "success",
-      });
+      toast("News updated successfully");
     } catch (error) {
       setLoader(false);
-      toast({
-        title: "Error",
-        description: error.response.data.message,
-        variant: "error",
-      });
+      toast("Failed to update news. Please try again later.");
     }
   };
 
   const getCategories = async () => {
     const res = await newsServices.getAllCategoriesWithName();
     setCategories(res);
+    console.log(res);
   };
 
   const get_news = async () => {
@@ -94,6 +87,7 @@ const EditNews = () => {
           Authorization: `Bearer ${store.token}`,
         },
       });
+
       setTitle(data?.news?.title || "");
       setSubTitle(data?.news?.subTitle || "");
       setDescription(data?.news?.description || "");
@@ -195,14 +189,11 @@ const EditNews = () => {
 
           {/* CATEGORY */}
           <div className="mb-6">
-            <Dropdown
-              value={currentCategory}
-              onChange={(e) => setCurrentCategory(e.value)}
+            <Combobox
               options={categories}
-              style={{ width: "100%", border: "1px solid #ccc" }}
-              optionLabel="category"
-              placeholder="Select a Category"
-              className="w-full md:w-14rem"
+              setValue={setCurrentCategory}
+              value={currentCategory}
+              title="Select a Category"
             />
           </div>
 

@@ -1,12 +1,14 @@
+import "primeicons/primeicons.css";
 import { PrimeReactProvider } from "primereact/api";
 import "primereact/resources/primereact.min.css";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { lazy, Suspense, useContext } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import storeContext from "./context/storeContext";
-import "primeicons/primeicons.css";
-import TestPage from "./pages/TestPage.jsx";
 import CategoriesPage from "./pages/CategoriesPage";
+import DraftsPage from "./pages/DraftsPage";
+import ManageWriterPage from "./pages/ManageWriterPage";
+import TestPage from "./pages/TestPage.jsx";
 
 // Lazy imports
 const MainLayout = lazy(() => import("./layout/MainLayout"));
@@ -21,11 +23,12 @@ const Signup = lazy(() => import("./pages/SignupPage"));
 const Unable = lazy(() => import("./pages/UnablePage"));
 const WriterIndex = lazy(() => import("./pages/WriterIndexPage"));
 const Writers = lazy(() => import("./pages/WritersPage"));
-const ProtectDashboatd = lazy(() => import("./middleware/ProtectDashboard"));
+const ProtectDashboard = lazy(() => import("./middleware/ProtectDashboard"));
 const ProtectRole = lazy(() => import("./middleware/ProtectRole"));
 
 function App() {
   const { store } = useContext(storeContext);
+  console.log(store.userInfo);
 
   return (
     <BrowserRouter>
@@ -35,35 +38,40 @@ function App() {
             <Route path="/" element={<TestPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/dashboard" element={<ProtectDashboatd />}>
+
+            <Route path="/dashboard" element={<ProtectDashboard />}>
               <Route path="" element={<MainLayout />}>
                 <Route
-                  path=""
+                  index
                   element={
                     store.userInfo?.role === "admin" ? (
-                      <Navigate to="/dashboard/admin" />
+                      <Navigate to="/dashboard/admin" replace />
                     ) : (
-                      // <Navigate to="/dashboard/writer" />
-                      <Navigate to="/dashboard/admin" /> // todo FIXME: Set correct route
+                      <Navigate to="/dashboard/writer" replace />
                     )
                   }
                 />
-                <Route path="unable-access" element={<Unable />} />
-                <Route path="news" element={<News />} />
-                <Route path="profile" element={<Profile />} />
 
-                <Route path="" element={<ProtectRole role="admin" />}>
+                {/* Admin protected routes */}
+                <Route element={<ProtectRole role="admin" />}>
                   <Route path="admin" element={<AdminIndex />} />
                   <Route path="writer/add" element={<AddWriter />} />
                   <Route path="writers" element={<Writers />} />
+                  <Route
+                    path="writers/manage/:writer_id"
+                    element={<ManageWriterPage />}
+                  />
                 </Route>
 
-                <Route path="" element={<ProtectRole role="writer" />}>
-                  <Route path="writer" element={<WriterIndex />} />
-                  <Route path="news/create" element={<AddNews />} />
-                  <Route path="categories" element={<CategoriesPage />} />
-                  <Route path="news/edit/:news_id" element={<EditNews />} />
-                </Route>
+                <Route path="writer" element={<WriterIndex />} />
+                <Route path="news/create" element={<AddNews />} />
+                <Route path="news/drafts" element={<DraftsPage />} />
+
+                <Route path="news" element={<News />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="categories" element={<CategoriesPage />} />
+                <Route path="news/edit/:news_id" element={<EditNews />} />
+                <Route path="unable-access" element={<Unable />} />
               </Route>
             </Route>
           </Routes>

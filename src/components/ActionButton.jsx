@@ -18,6 +18,7 @@ import { CiMenuKebab } from "react-icons/ci";
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const ActionButton = ({ newsId, token }) => {
   const navigate = useNavigate();
@@ -25,7 +26,14 @@ const ActionButton = ({ newsId, token }) => {
 
   const deleteNews = async () => {
     await newsServices.deleteNews(newsId, token);
-    setIsDialogOpen(false);
+    try {
+      toast("News deleted successfully");
+      window.location.reload();
+    } catch (error) {
+      toast("Failed to delete news. Try again later.");
+    } finally {
+      setIsDialogOpen(false);
+    }
   };
 
   const editNews = () => {

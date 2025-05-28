@@ -44,12 +44,10 @@ import React, {
 import { toast } from "sonner";
 import ActionButton from "./ActionButton";
 
-// Utility function moved outside component to prevent recreation
 const convertHtmlToText = (html) => {
   return html.replace(/<[^>]*>/g, "");
 };
 
-// Memoized Badge component to prevent unnecessary re-renders
 const StatusBadge = memo(({ status, newsId, isClickable, onStatusChange }) => {
   const variants = {
     pending: "secondary",
@@ -79,20 +77,13 @@ const StatusBadge = memo(({ status, newsId, isClickable, onStatusChange }) => {
   );
 });
 
-// Memoized News Image component
 const NewsImage = memo(({ src, alt }) => (
-  <img
-    src={src}
-    alt={alt}
-    className="w-10 h-10 rounded object-cover"
-    loading="lazy" // Add lazy loading for images
-  />
+  <img src={src} alt={alt} className="w-10 h-10 rounded object-cover" />
 ));
 
-// Memoized Actions component
 const NewsActions = memo(({ news, isWriter, token }) => (
   <div className="flex items-center gap-2">
-    {isWriter && (
+    {/* {isWriter && (
       <>
         <Button variant="outline" size="sm">
           <Edit className="h-4 w-4" />
@@ -101,7 +92,7 @@ const NewsActions = memo(({ news, isWriter, token }) => (
           <Trash2 className="h-4 w-4" />
         </Button>
       </>
-    )}
+    )} */}
     <ActionButton newsId={news._id} token={token} />
   </div>
 ));
@@ -116,7 +107,6 @@ const NewsContent = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  // Server-side pagination state
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -124,10 +114,8 @@ const NewsContent = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  // Debounced search value to prevent excessive API calls
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
-  // Memoize user role checks
   const { isAdmin, isWriter, token } = useMemo(
     () => ({
       isAdmin: store?.userInfo?.role === "admin",
@@ -137,7 +125,6 @@ const NewsContent = () => {
     [store?.userInfo?.role, store?.token]
   );
 
-  // Memoized status update function
   const updateStatus = useCallback(
     async (status, newsId) => {
       try {
@@ -151,7 +138,6 @@ const NewsContent = () => {
           }
         );
 
-        // Update local state
         setData((prev) =>
           prev.map((item) => (item._id === newsId ? { ...item, status } : item))
         );
@@ -164,7 +150,6 @@ const NewsContent = () => {
     [token]
   );
 
-  // Optimized fetch function with better dependency management
   const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
@@ -173,12 +158,10 @@ const NewsContent = () => {
         limit: pagination.pageSize.toString(),
       });
 
-      // Add search filter if exists
       if (debouncedSearchTerm.trim()) {
         params.append("search", debouncedSearchTerm.trim());
       }
 
-      // Add status filter if not 'all'
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
@@ -206,7 +189,6 @@ const NewsContent = () => {
     token,
   ]);
 
-  // Debounce search input
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDebouncedSearchTerm(globalFilter);
@@ -215,19 +197,16 @@ const NewsContent = () => {
     return () => clearTimeout(timeoutId);
   }, [globalFilter]);
 
-  // Fetch data when dependencies change
   useEffect(() => {
     fetchNews();
   }, [fetchNews]);
 
-  // Reset to first page when search or status filter changes
   useEffect(() => {
     if (pagination.pageIndex !== 0) {
       setPagination((prev) => ({ ...prev, pageIndex: 0 }));
     }
   }, [debouncedSearchTerm, statusFilter]);
 
-  // Memoized columns definition to prevent recreation on every render
   const columns = useMemo(
     () => [
       {
@@ -302,7 +281,6 @@ const NewsContent = () => {
     [isAdmin, isWriter, token, updateStatus]
   );
 
-  // Memoized table configuration
   const table = useReactTable({
     data,
     columns,
@@ -322,7 +300,6 @@ const NewsContent = () => {
     manualPagination: true,
   });
 
-  // Memoized loading skeleton
   const loadingSkeleton = useMemo(
     () => (
       <div className="w-full p-4">
@@ -360,7 +337,6 @@ const NewsContent = () => {
     []
   );
 
-  // Memoized pagination info
   const paginationInfo = useMemo(
     () => ({
       showingFrom: pagination.pageIndex * pagination.pageSize + 1,

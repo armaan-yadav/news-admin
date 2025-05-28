@@ -1,27 +1,26 @@
-import React, { useContext } from 'react'
-import profile from '../assets/profile.png'
-import storeContext from '../context/storeContext'
+import React, { useContext } from "react";
+import { SidebarTrigger } from "./ui/sidebar";
+import storeContext from "@/context/storeContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Header = () => {
-  const {store} = useContext(storeContext)
+  const { store } = useContext(storeContext);
+  const userName = store?.userInfo?.name || "User";
 
   return (
-    <div className='pl-4 fixed w-[calc(100vw-250px)] top-4 z-50'>
-      <div className='w-full rounded h-[70px] flex justify-between items-center p-4 bg-white'>
-        <input type="text" placeholder='search' className='px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10' />
-
-        <div className='mr-4'>
-          <div className='flex gap-x-2'>
-            <div className='flex flex-col justify-center items-end'>
-              <span>{store.userInfo?.name}</span>
-              <span>{store.userInfo?.role}</span>
-            </div>
-            <img className='w-10 h-10 rounded-full' src={profile} alt="" />
-          </div>
+    <header className="flex h-16 items-center justify-between border-b px-4 bg-white shadow-sm">
+      <div className="flex items-center gap-4 justify-between w-full">
+        <SidebarTrigger className="-ml-1" />
+        <div className="flex items-center gap-3">
+          <Avatar>
+            <AvatarImage src={store?.userInfo?.avatar} alt={userName} />
+            <AvatarFallback>{userName[0]}</AvatarFallback>
+          </Avatar>
+          <span className="font-semibold">{userName}</span>
         </div>
       </div>
-    </div>
-  )
-}
+    </header>
+  );
+};
 
-export default Header
+export default Header;

@@ -1,13 +1,3 @@
-import * as React from "react";
-import { useContext } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { AiFillDashboard, AiOutlinePlus } from "react-icons/ai";
-import { ImProfile } from "react-icons/im";
-import { BiNews } from "react-icons/bi";
-import { FiUsers } from "react-icons/fi";
-import { FaPlus } from "react-icons/fa";
-import { IoLogOutOutline } from "react-icons/io5";
-import storeContext from "../context/storeContext";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +11,16 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Grid2x2 } from "lucide-react";
+import { useContext } from "react";
+import { AiFillDashboard, AiOutlinePlus } from "react-icons/ai";
+import { BiNews } from "react-icons/bi";
+import { FaPlus } from "react-icons/fa";
+import { FiUsers } from "react-icons/fi";
+import { ImProfile } from "react-icons/im";
+import { IoLogOutOutline } from "react-icons/io5";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import storeContext from "../context/storeContext";
+import { MdDrafts } from "react-icons/md";
 
 const AppSidebar = ({ ...props }) => {
   const { store, dispatch } = useContext(storeContext);
@@ -33,7 +33,6 @@ const AppSidebar = ({ ...props }) => {
     navigate("/login");
   };
 
-  // Navigation data structure
   const navData = [
     {
       title: "Admin",
@@ -73,6 +72,12 @@ const AppSidebar = ({ ...props }) => {
           icon: <FaPlus />,
           isActive: pathname === "/dashboard/news/create",
         },
+        {
+          title: "My Drafts",
+          url: "/dashboard/news/drafts",
+          icon: <MdDrafts />,
+          isActive: pathname === "/dashboard/news/drafts",
+        },
       ],
     },
     {
@@ -80,7 +85,7 @@ const AppSidebar = ({ ...props }) => {
       items: [
         {
           title: "News",
-          url: "/dashboard/news",
+        url: "/dashboard/news",
           icon: <BiNews />,
           isActive: pathname === "/dashboard/news",
         },
@@ -100,6 +105,22 @@ const AppSidebar = ({ ...props }) => {
     },
   ];
 
+  const getFilteredNavData = () => {
+    const userRole = store.userInfo?.role;
+
+    if (userRole === "admin") {
+      return navData;
+    } else if (userRole === "writer") {
+      return navData.filter(
+        (section) => section.title === "Writer" || section.title === "General"
+      );
+    } else {
+      return navData.filter((section) => section.title === "General");
+    }
+  };
+
+  const filteredNavData = getFilteredNavData();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -109,7 +130,7 @@ const AppSidebar = ({ ...props }) => {
       </SidebarHeader>
 
       <SidebarContent>
-        {navData.map((section) => (
+        {filteredNavData.map((section) => (
           <SidebarGroup key={section.title}>
             <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
             <SidebarGroupContent>

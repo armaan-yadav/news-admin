@@ -1,30 +1,40 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { base_url } from "../config/config";
 import storeContext from "../context/storeContext";
-import newsServices from "../services/newsServices";
+
+import { Input } from "../components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "../components/ui/select";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
 
 const AddWriter = () => {
   const navigate = useNavigate();
   const { store } = useContext(storeContext);
-  const [categories, setCategories] = useState([]);
 
-  const [state, setState] = useState({
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    category: "",
+    role: "writer",
   });
 
-  const inputHandler = (e) => {
-    setState({
-      ...state,
-      [e.target.name]: e.target.value,
-    });
-  };
   const [loader, setLoader] = useState(false);
+
+  const inputHandler = (field) => (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -32,7 +42,7 @@ const AddWriter = () => {
       setLoader(true);
       const { data } = await axios.post(
         `${base_url}/api/news/writer/add`,
-        state,
+        formData,
         {
           headers: {
             Authorization: `Bearer ${store.token}`,
@@ -44,125 +54,82 @@ const AddWriter = () => {
       navigate("/dashboard/writers");
     } catch (error) {
       setLoader(false);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
-  const getCategories = async () => {
-    const res = await newsServices.getAllCategoriesWithName();
-    setCategories(res);
-  };
 
-  useEffect(() => {
-    getCategories();
-  }, []);
-
-  console.log(categories);
   return (
-    <div className="bg-white rounded-md">
-      <div className="flex justify-between p-4">
-        <h2 className="text-xl font-medium">Add writers</h2>
+    <div className="max-w-3xl mx-auto bg-white rounded-md shadow-md p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">Add Writer</h2>
         <Link
-          className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
           to="/dashboard/writers"
+          className="text-purple-600 hover:text-purple-800 font-medium"
         >
-          Writers
+          View Writers
         </Link>
       </div>
-      <div className="p-4">
-        <form onSubmit={submit}>
-          <div className="grid grid-cols-2 gap-x-8 mb-3">
-            <div className="flex flex-col gap-y-2">
-              <label
-                className="text-md font-medium text-gray-600"
-                htmlFor="name"
-              >
-                Name
-              </label>
-              <input
-                onChange={inputHandler}
-                value={state.name}
-                required
-                type="text"
-                placeholder="name"
-                name="name"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
-                id="name"
-              />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label
-                className="text-md font-medium text-gray-600"
-                htmlFor="category"
-              >
-                Category
-              </label>
-              <select
-                onChange={inputHandler}
-                value={state.category}
-                required
-                name="category"
-                id="category"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
-              >
-                <option value="">---select category---</option>
-                {categories?.map((category, i) => (
-                  <option value={category} key={i}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+      <form onSubmit={submit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex flex-col">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Enter name"
+              required
+              value={formData.name}
+              onChange={(e) => inputHandler("name")(e.target.value)}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-x-8 mb-3">
-            <div className="flex flex-col gap-y-2">
-              <label
-                className="text-md font-medium text-gray-600"
-                htmlFor="email"
-              >
-                Email
-              </label>
-              <input
-                onChange={inputHandler}
-                value={state.email}
-                required
-                type="email"
-                placeholder="email"
-                name="email"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
-                id="email"
-              />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <div className="flex flex-col gap-y-2">
-                <label
-                  className="text-md font-medium text-gray-600"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-                <input
-                  onChange={inputHandler}
-                  value={state.password}
-                  required
-                  type="password"
-                  placeholder="password"
-                  name="password"
-                  className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-green-500 h-10"
-                  id="password"
-                />
-              </div>
-            </div>
+
+          <div className="flex flex-col">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter email"
+              required
+              value={formData.email}
+              onChange={(e) => inputHandler("email")(e.target.value)}
+            />
           </div>
-          <div className="mt-4">
-            <button
-              disabled={loader}
-              className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
+
+          <div className="flex flex-col">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter password"
+              required
+              value={formData.password}
+              onChange={(e) => inputHandler("password")(e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <Label htmlFor="role">Role</Label>
+            <Select
+              value={formData.role}
+              onValueChange={inputHandler("role")}
+              defaultValue="writer"
             >
-              {loader ? "Loading..." : "Add Writer"}
-            </button>
+              <SelectTrigger id="role" className="w-full">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="writer">Writer</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </form>
-      </div>
+        </div>
+
+        <Button type="submit" disabled={loader} className="w-full">
+          {loader ? "Adding..." : "Add Writer"}
+        </Button>
+      </form>
     </div>
   );
 };

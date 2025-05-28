@@ -156,33 +156,40 @@ const AdminIndex = () => {
       </section>
 
       {/* News Performance & Engagement (Charts would go here) */}
-      {/*
+
       <section>
         <h2 className="text-xl font-semibold mb-3">News Performance</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Publishing Trends</CardTitle>
-              <CardDescription>News articles published over time.</CardDescription>
+              <CardDescription>
+                News articles published over time.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {/* Chart Component (e.g., Recharts) */}
-      {/*<div className="h-[300px] bg-gray-100 flex items-center justify-center">Chart Placeholder</div>
+              <div className="h-[300px] bg-gray-100 flex items-center justify-center">
+                Chart Placeholder
+              </div>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle>Popular Categories</CardTitle>
-              <CardDescription>Distribution of news by category.</CardDescription>
+              <CardDescription>
+                Distribution of news by category.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {/* Chart Component */}
-      {/*<div className="h-[300px] bg-gray-100 flex items-center justify-center">Chart Placeholder</div>
+              <div className="h-[300px] bg-gray-100 flex items-center justify-center">
+                Chart Placeholder
+              </div>
             </CardContent>
           </Card>
         </div>
       </section>
-      */}
 
       {/* Recent News Activity */}
       <section>
@@ -206,48 +213,42 @@ const AdminIndex = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {news.slice(0, 5).map(
-                    (
-                      item // Show first 5
-                    ) => (
-                      <TableRow key={item._id}>
-                        <TableCell className="font-medium truncate max-w-xs">
-                          {item.title || "Untitled"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              item.status === "published"
-                                ? "default"
-                                : "outline"
-                            }
-                          >
-                            {item.status || "N/A"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {item.category.name || "Uncategorized"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View</DropdownMenuItem>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  )}
+                  {news.slice(0, 5).map((item) => (
+                    <TableRow key={item._id}>
+                      <TableCell className="font-medium truncate max-w-xs">
+                        {item.title || "Untitled"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            item.status === "published" ? "default" : "outline"
+                          }
+                        >
+                          {item.status || "N/A"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {item.category.name || "Uncategorized"}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View</DropdownMenuItem>
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-600">
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             ) : (

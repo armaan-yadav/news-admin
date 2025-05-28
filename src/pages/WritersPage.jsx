@@ -1,13 +1,26 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { FaEye } from "react-icons/fa";
+import { CiMenuKebab } from "react-icons/ci";
+import { FaToggleOn, FaToggleOff } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { base_url } from "../config/config";
 import storeContext from "../context/storeContext";
+import { toast } from "sonner";
 
 const Writers = () => {
   const { store } = useContext(storeContext);
   const [writers, setWriters] = useState([]);
+  const [writerStats, setWriterStats] = useState([]);
 
   const get_writers = async () => {
     try {
@@ -18,67 +31,161 @@ const Writers = () => {
       });
       setWriters(data.writers);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    }
+  };
+
+  const get_writers_stats = async () => {
+    try {
+      const { data } = await axios.get(
+        `${base_url}/api/news/writers/news-count`,
+        {
+          headers: {
+            Authorization: `Bearer ${store.token}`,
+          },
+        }
+      );
+      setWriterStats(data.stats);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const toggleActive = async (writerId, currentStatus) => {
+    const updatedStatus = !currentStatus;
+    try {
+      setWriters((prev) =>
+        prev.map((writer) =>
+          writer._id === writerId
+            ? { ...writer, isActive: updatedStatus }
+            : writer
+        )
+      );
+
+      await axios.put(
+        `${base_url}/api/news/writers/edit/${writerId}`,
+        { isActive: updatedStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${store.token}`,
+          },
+        }
+      );
+      toast(
+        `Writer ${updatedStatus ? "activated" : "deactivated"} successfully!`
+      );
+    } catch (error) {
+      console.error("Failed to update active status", error);
+      toast("Failed to toggle writer status.");
+      setWriters((prev) =>
+        prev.map((writer) =>
+          writer._id === writerId
+            ? { ...writer, isActive: currentStatus }
+            : writer
+        )
+      );
     }
   };
 
   useEffect(() => {
     get_writers();
+    get_writers_stats();
   }, []);
+
   return (
-    <div className="bg-white rounded-md">
-      <div className="flex justify-between p-4">
-        <h2 className="text-xl font-medium">Writers</h2>
-        <Link
-          className="px-3 py-[6px] bg-purple-500 rounded-sm text-white hover:bg-purple-600"
-          to="/dashboard/writer/add"
-        >
-          Add Writer
-        </Link>
-      </div>
-      <div className="relative overflow-x-auto p-4">
-        <table className="w-full text-sm text-left text-slate-600">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-            <tr>
-              <th className="px-7 py-3">No</th>
-              <th className="px-7 py-3">Name</th>
-              <th className="px-7 py-3">Category</th>
-              <th className="px-7 py-3">Role</th>
-              <th className="px-7 py-3">Image</th>
-              <th className="px-7 py-3">Email</th>
-              <th className="px-7 py-3">Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            {writers.map((r, i) => (
-              <tr key={i} className="bg-white border-b">
-                <td className="px-6 py-4">{i + 1}</td>
-                <td className="px-6 py-4">{r.name}</td>
-                <td className="px-6 py-4">{r.category}</td>
-                <td className="px-6 py-4">{r.role}</td>
-                <td className="px-6 py-4">
-                  <img
-                    className="w-[40px] h-[40px]"
-                    src="https://res.cloudinary.com/dpj4vsqbo/image/upload/v1696952625/news/g7ihrhbxqdg5luzxtd9y.webp"
-                    alt=""
-                  />
-                </td>
-                <td className="px-6 py-4">{r.email}</td>
-                <td className="px-6 py-4">
-                  <div className="flex justify-start items-center gap-x-4 text-white">
-                    <Link
-                      to={`/dashboard/writer/${r._id}`}
-                      className="p-[6px] bg-green-500 rounded hover:shadow-lg hover:shadow-green-500/50"
+    <div className="grid gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Writers</CardTitle>
+          <Link to="/dashboard/writer/add">
+            <Button>Add Writer</Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Image</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Active</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {writers.map((r, i) => (
+                <TableRow key={r._id}>
+                  <TableCell>{i + 1}</TableCell>
+                  <TableCell>{r.name}</TableCell>
+                  <TableCell>{r.role}</TableCell>
+                  <TableCell>
+                    <img
+                      className="w-10 h-10 rounded-full object-cover"
+                      src="https://res.cloudinary.com/dpj4vsqbo/image/upload/v1696952625/news/g7ihrhbxqdg5luzxtd9y.webp"
+                      alt={r.name}
+                    />
+                  </TableCell>
+                  <TableCell>{r.email}</TableCell>
+                  <TableCell>
+                    <button
+                      onClick={() => toggleActive(r._id, r.isActive)}
+                      className="text-xl"
+                      title={r.isActive ? "Deactivate" : "Activate"}
                     >
-                      <FaEye />
+                      {r.isActive ? (
+                        <FaToggleOn className="text-green-500" />
+                      ) : (
+                        <FaToggleOff className="text-gray-400" />
+                      )}
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    <Link to={`/dashboard/writers/manage/${r._id}`}>
+                      <Button variant="outline" size="icon">
+                        <CiMenuKebab />
+                      </Button>
                     </Link>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Writer News Statistics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Writer Name</TableHead>
+                <TableHead>Active News</TableHead>
+                <TableHead>Inactive News</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {writerStats.map((stat, i) => (
+                <TableRow key={i}>
+                  <TableCell>{i + 1}</TableCell>
+                  <TableCell>{stat.writerName}</TableCell>
+                  <TableCell className="text-green-600">
+                    {stat.activeNewsCount}
+                  </TableCell>
+                  <TableCell className="text-red-600">
+                    {stat.inactiveNewsCount}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

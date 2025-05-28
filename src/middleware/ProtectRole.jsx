@@ -5,13 +5,10 @@ import storeContext from "../context/storeContext";
 const ProtectRole = ({ role }) => {
   const { store } = useContext(storeContext);
 
-  return <Outlet />;
   if (store.userInfo?.role === role) {
-    console.log("admin");
+    return <Outlet />;
   } else {
-    console.log("not admin");
-    // fixme
-    // return <Navigate to='/dashboard/unable-access' />
+    return <Navigate to="/dashboard/unable-access" />;
   }
 };
 
